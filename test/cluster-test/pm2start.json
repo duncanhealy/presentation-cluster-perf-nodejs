@@ -1,0 +1,26 @@
+{
+  "apps": [
+    {
+      "name": "cluster-test",
+      "exec_mode": "cluster",
+      "instances": 4,
+      "script": "index.js",
+      "log_date_format": "YYYY-MM-DD HH:mm:ss.SSS",
+      // "node_args": "--inspect",
+      "cwd": "./",
+      "autorestart": true,
+      "max_memory_restart": "1G",
+      "cron_restart": "0 59 * * *",
+      "env": {
+        "NODE_PORT": "80",
+        "KEYMETRICS_PUBLIC": "",
+        "KEYMETRICS_SECRET": "",
+        "NODE_ENV": "production",
+        "NODE_PATH": ".",
+        "DEBUG": "socket.io-parser:1,socket.io:3,engine:1,local:*:*",
+        "TZ": "UTC",
+        "PORT": "80"
+      }
+    }
+  ]
+}
