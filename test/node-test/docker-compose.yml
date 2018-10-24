@@ -1,0 +1,15 @@
+version: '3'
+services:
+  node-test:
+    container_name: node-test
+    restart: always
+    build: ./.
+    ports: 
+    - "80:80"
+  #nginx:
+  #  container_name: nginx
+  #  image: nginx:1.14-alpine
+  #  volumes:
+  #  - ./nginx:/etc/nginx/conf.d
+  #  ports:
+  #  - "80:80"

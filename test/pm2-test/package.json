@@ -1,0 +1,16 @@
+{
+  "name": "pm2-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "./node_modules/.bin/pm2-docker start pm2start.json"
+  },
+  "keywords": [],
+  "author": "Duncan Healy",
+  "license": "ISC",
+  "dependencies": {
+    "pm2": "^3.1.3"
+  }
+}
