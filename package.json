@@ -1,0 +1,24 @@
+{
+  "name": "presentation-cluster-perf-nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/duncanhealy/presentation-cluster-perf-nodejs.git"
+  },
+  "keywords": [],
+  "author": "duncan healy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/duncanhealy/presentation-cluster-perf-nodejs/issues"
+  },
+  "homepage": "https://github.com/duncanhealy/presentation-cluster-perf-nodejs#readme",
+  "dependencies": {
+    "artillery": "^1.6.0-24",
+    "pm2": "^3.1.3"
+  }
+}

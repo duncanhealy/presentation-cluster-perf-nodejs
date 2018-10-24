@@ -1,6 +1,6 @@
 [environments]
   [environments.development]
-    name = "pm2"
+    name = "nodejs"
     namespace = "default"
     wait = true
     watch = false

@@ -1,0 +1,92 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "11"
+  creationTimestamp: null
+  generation: 1
+  labels:
+    app: pricingapi
+    chart: pricingapi-v2
+    draft: pricingapi
+    release: canary
+    version: v2
+  name: pricingapi-v2
+  selfLink: /apis/extensions/v1beta1/namespaces/demo/deployments/pricingapi-v2
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: pricingapi
+      chart: pricingapi-v2
+      draft: pricingapi
+      release: canary
+      version: v2
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        buildID: 01CKNEMPBDCYWG73GAVXHFZPY6
+        prometheus.io/port: "3000"
+        prometheus.io/scrape: "true"
+      creationTimestamp: null
+      labels:
+        app: pricingapi
+        chart: pricingapi-v2
+        draft: pricingapi
+        release: canary
+        version: v2
+    spec:
+      containers:
+      - env:
+        - name: CONNECTION_STRING
+          value: 
+        - name: SELECTED_CONFIG
+          value: 
+        image: x.azurecr.io/y:52fce2848899193bc9135c243fc021e327f32545
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          exec:
+            command:
+            - curl
+            - -f
+            - http://localhost:3000/health
+          failureThreshold: 3
+          periodSeconds: 40
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: pricingapi
+        ports:
+        - containerPort: 3000
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            - curl
+            - -f
+            - http://localhost:3000/ready
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /data/all
+          name: data-all
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: data-all
+status: {}

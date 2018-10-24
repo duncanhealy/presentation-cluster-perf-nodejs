@@ -1,7 +1,8 @@
 HOST=http://localhost:8081/
 LOC=westeurope
 CRVER=nodejs
-
+getcreds:
+	az aks get-credentials -g present-perf-uksouth -n perfpresent-perf-uksouth
 artillery:
 	./node_modules/.bin/artillery quick --count 10 -n 20 ${HOST}
 createtest:
@@ -26,6 +27,8 @@ install-asciicinema:
 install-microk8s:
 	snap install microk8s --classic --beta
 	snap alias microk8s.kubectl mk
+install-helm:
+
 asciicinema: # alias bd backdirectory
 	cd ../asciinema && python3 -m asciinema rec -i 2 coredump.cast && bd
 install-node-edge:
@@ -67,11 +70,11 @@ k8-draft-config:
 	draft config set resource-group-name ${CRVER}
 #	draft config set registry ${CRVER}${CONTAINERDOMAIN}
 k8-docker-secret:
-	kubectl create secret -n kube-system docker-registry docker-cloud-auth \
-  	--docker-server hub.docker.com \
-	--docker-username $CR \
- 	--docker-password $DOCKERCLOUDAPIPASS \
-	--docker-email $EMAIL
+	# kubectl create secret -n kube-system docker-registry docker-cloud-auth \
+  	# --docker-server hub.docker.com \
+	# --docker-username $CR \
+ 	# --docker-password $DOCKERCLOUDAPIPASS \
+	# --docker-email $EMAIL
 k8-registry-create:
 	az group create --name ${CRVER} --location=${LOC}
 	az acr create --resource-group ${CRVER} --name ${CRVER} --sku Basic

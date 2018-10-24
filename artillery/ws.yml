@@ -1,0 +1,27 @@
+config:
+
+  phases:
+      - duration: 1
+        arrivalRate: 2
+
+      # - duration: 60
+        # arrivalRate: 50
+        # rampTo: 20
+
+      # - duration: 60
+        # arrivalRate: 20
+
+  environments:
+      production:
+        target: "wss://echo.websocket.org"
+
+      local:
+        target: "ws://localhost:8000/ws/echo/"
+
+
+scenarios:
+    - engine: "ws"
+      flow:
+        - send: "hello"
+        # - think: 1
+# - send: "world"
