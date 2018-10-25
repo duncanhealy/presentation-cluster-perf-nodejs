@@ -62,7 +62,7 @@ spec:
 ```
 
 
-[post hpa](hpa.json.html)
+[post hpa](reports/hpa.json.html)
 
 ---
 
@@ -164,24 +164,11 @@ CMD ["nginx", "-g", "daemon off;"]
 
 ## Cluster Options
 
+
 ### require('cluster')
+
+
 ```js
-function messageHandler (msg) {
-  debug.info(msg)
-  if (msg.cmd && msg.cmd === 'notifyRequest') {
-    numReqs += 1
-  }
-}
-const server = micro(async (req, res) => {
-  try {
-    await methodHandler(req, res)
-  } catch (error) {
-    debug.error(error)
-    send(res, 500, error)
-  }
-})
-
-
 const cluster = require('cluster')
 // const http = require('http')
 
@@ -382,13 +369,30 @@ Note: discuss +- for each
 
 ## Performance measurement 
 
-### 
 
 [Benchmarking in core](https://github.com/nodejs/http2/blob/master/doc/guides/writing-and-running-benchmarks.md)
 
 [Simple Profiling](https://nodejs.org/en/docs/guides/simple-profiling/)
 
+
 ### Perf timers
+
+
+```js
+// https://nodejs.org/api/http2.html#http2_collecting_http_2_performance_metrics
+const { PerformanceObserver } = require('perf_hooks');
+
+const obs = new PerformanceObserver((items) => {
+  const entry = items.getEntries()[0];
+  console.log(entry.entryType);  // prints 'http2'
+  if (entry.name === 'Http2Session') {
+    // entry contains statistics about the Http2Session
+  } else if (entry.name === 'Http2Stream') {
+    // entry contains statistics about the Http2Stream
+  }
+});
+obs.observe({ entryTypes: ['http2'] });
+```
 
 
 ```shell
@@ -399,6 +403,7 @@ real    0m4.096s
 user    0m4.086s
 sys     0m0.012s
 ```
+
 
 ### Graphing
 
@@ -429,8 +434,7 @@ sys     0m0.012s
 
 * bench-rest
 * artillery
-
-### Nearform
+* [bubbleprof](https://github.com/nearform/node-clinic-bubbleprof) *:)* _Nearform_
 
 Note: Precision vs ease of use
 
@@ -438,12 +442,15 @@ Note: Precision vs ease of use
 
 ## Load Generation
 
+
 ### Artillery
+
 
 ### Task
 * Prime number
 * Sleep
-* some 
+* some network task
+* some async db work
 
 
 ### docker-hey
@@ -452,6 +459,7 @@ Note: Precision vs ease of use
 ### Loadtest
 
 https://github.com/loadimpact/loadgentest
+
 
 ### httpstat
 
@@ -469,6 +477,339 @@ Note: httpstat
 
 ## Initial results
 
+
+### single node - socket data
+
+
+```
+Report @ 14:18:33(+0100) 2018-10-25
+  Scenarios launched:  50
+  Scenarios completed: 50
+  Requests completed:  2500
+  RPS sent: 261.51
+  Request latency:
+    min: 29.6
+    max: 2408
+    median: 103.9
+    p95: 305
+    p99: 840
+  Codes:
+    200: 2500
+```
+
+
+```
+All virtual users finished
+Summary report @ 14:18:33(+0100) 2018-10-25
+  Scenarios launched:  50
+  Scenarios completed: 50
+  Requests completed:  2500
+  RPS sent: 261.23
+  Request latency:
+    min: 29.6
+    max: 2408
+    median: 103.9
+    p95: 305
+    p99: 840
+  Scenario counts:
+    0: 50 (100%)
+  Codes:
+    200: 2500
+```
+
+
+## Concurrent
+
+
+
+```
+Report @ 14:18:41(+0100) 2018-10-25
+  Scenarios launched:  0
+  Scenarios completed: 37
+  Requests completed:  686
+  RPS sent: 188.67
+  Request latency:
+    min: 28.4
+    max: 394.1
+    median: 75
+    p95: 194.5
+    p99: 351
+  Codes:
+    200: 686
+```
+
+
+```
+All virtual users finished
+Summary report @ 14:18:41(+0100) 2018-10-25
+  Scenarios launched:  50
+  Scenarios completed: 50
+  Requests completed:  2500
+  RPS sent: 184.37
+  Request latency:
+    min: 28.4
+    max: 6602.5
+    median: 85.2
+    p95: 231.4
+    p99: 5633.2
+  Scenario counts:
+    0: 50 (100%)
+  Codes:
+    200: 2500
+```
+
+
+```json
+[{\"CallAskDelta\":0.690592,\"CallAskGamma\":0.310353,\"CallAskRate\":0.008357999999999999,\"CallAskTheta\":-0.000164,\"CallAskVega\":0.000611,\"CallAskVolatility\":0.06554918098946987,\"CallBidDelta\":0.690592,\"CallBidGamma\":0.310353,\"CallBidRate\":0.007307999999999999,\"CallBidTheta\":-0.000164,\"CallBidVega\":0.000611,\"CallBidVolatility\":0.06554918098946987,\"Decimals\":5,\"ExpirationDate\":\"2018-11-08T15:00:00\",\"Product\":\"EUR/GBP\",\"PutAskDelta\":-0.309634,\"PutAskGamma\":0.310353,\"PutAskRate\":0.002799,\"PutAskTheta\":-0.000134,\"PutAskVega\":0.000611,\"PutAskVolatility\":0.06554918098946987,\"PutBidDelta\":-0.309634,\"PutBidGamma\":0.310353,\"PutBidRate\":0.0017490000000000001,\"PutBidTheta\":-0.000134,\"PutBidVega\":0.000611,\"PutBidVolatility\":0.06554918098946987,\"SpotAsk\":0.88538,\"SpotBid\":0.88488,\"Strike\":0.88,\"Tenor\":\"14D\",\"TradeDate\":\"2018-10-25T13:28:15\",\"id\":\":EUR/GBP:0.88000:2018-11-08:true\",\"realtime\":0.88504,\"timestamp\":1540472400,\"fxsource\":\"\",\"source\":\"flattened\",\"_id\":\"JRnEFF0wqcCl8A7O\",\"createdAt\":\"2018-10-25T13:28:16.745Z\",\"updatedAt\":\"2018-10-25T13:28:16.745Z\"}]
+ ```
+
+
+```
+ Report @ 14:28:17(+0100) 2018-10-25
+  Scenarios launched:  1
+  Scenarios completed: 1
+  Requests completed:  10
+  RPS sent: 3.36
+  Request latency:
+    min: 69
+    max: 1944.8
+    median: 70.9
+    p95: 1944.8
+    p99: 1944.8
+  Codes:
+    200: 10
+```
+
+
+```
+All virtual users finished
+Summary report @ 14:28:17(+0100) 2018-10-25
+  Scenarios launched:  1
+  Scenarios completed: 1
+  Requests completed:  10
+  RPS sent: 3.36
+  Request latency:
+    min: 69
+    max: 1944.8
+    median: 70.9
+    p95: 1944.8
+    p99: 1944.8
+  Scenario counts:
+    0: 1 (100%)
+  Codes:
+    200: 10
+```
+
+
+## 10 @ 10
+
+
+```
+Report @ 14:30:11(+0100) 2018-10-25
+  Scenarios launched:  10
+  Scenarios completed: 10
+  Requests completed:  100
+  RPS sent: 42.02
+  Request latency:
+    min: 53.1
+    max: 254.7
+    median: 130.5
+    p95: 217.9
+    p99: 253.3
+  Codes:
+    200: 100
+```
+
+
+```
+All virtual users finished
+Summary report @ 14:30:12(+0100) 2018-10-25
+  Scenarios launched:  10
+  Scenarios completed: 10
+  Requests completed:  100
+  RPS sent: 42.02
+  Request latency:
+    min: 53.1
+    max: 254.7
+    median: 130.5
+    p95: 217.9
+    p99: 253.3
+  Scenario counts:
+    0: 10 (100%)
+  Codes:
+    200: 100
+```
+
+
+## 50 @50 
+
+
+```
+Report @ 14:31:48(+0100) 2018-10-25
+  Scenarios launched:  0
+  Scenarios completed: 42
+  Requests completed:  298
+  RPS sent: 63.21
+  Request latency:
+    min: 58.8
+    max: 673.6
+    median: 557.1
+    p95: 630.4
+    p99: 665.9
+  Codes:
+    200: 298
+```
+
+
+```
+All virtual users finished
+Summary report @ 14:31:48(+0100) 2018-10-25
+  Scenarios launched:  50
+  Scenarios completed: 50
+  Requests completed:  2500
+  RPS sent: 56.78
+  Request latency:
+    min: 38.2
+    max: 10875.5
+    median: 640.2
+    p95: 951
+    p99: 10033.9
+  Scenario counts:
+    0: 50 (100%)
+  Codes:
+    200: 2500
+```
+
+
+## 100 @ 100 
+
+
+```
+Report @ 14:40:18(+0100) 2018-10-25
+  Scenarios launched:  0
+  Scenarios completed: 34
+  Requests completed:  56
+  RPS sent: 14.77
+  Request latency:
+    min: 83.8
+    max: 1738.1
+    median: 1547.6
+    p95: 1700.5
+    p99: 1736.2
+  Codes:
+    200: 56
+```
+
+
+```
+All virtual users finished
+Summary report @ 14:40:18(+0100) 2018-10-25
+  Scenarios launched:  100
+  Scenarios completed: 100
+  Requests completed:  10000
+  RPS sent: 26.91
+  Request latency:
+    min: 50.5
+    max: 22625.3
+    median: 2964.8
+    p95: 5149.9
+    p99: 19554.8
+  Scenario counts:
+    0: 100 (100%)
+  Codes:
+    200: 10000
+```
+
+
+## Add a pod
+
+
+```
+Report @ 15:01:41(+0100) 2018-10-25
+  Scenarios launched:  100
+  Scenarios completed: 0
+  Requests completed:  3526
+  RPS sent: 360.56
+  Request latency:
+    min: 28.5
+    max: 7563.2
+    median: 136.9
+    p95: 349.6
+    p99: 2251.9
+  Codes:
+    200: 3526
+```
+
+
+```
+Report @ 15:01:51(+0100) 2018-10-25
+  Scenarios launched:  0
+  Scenarios completed: 51
+  Requests completed:  3850
+  RPS sent: 381.82
+  Request latency:
+    min: 29.8
+    max: 13865.7
+    median: 155.3
+    p95: 412.3
+    p99: 613.7
+  Codes:
+    200: 3850
+```
+
+
+```
+Report @ 15:02:01(+0100) 2018-10-25
+  Scenarios launched:  0
+  Scenarios completed: 42
+  Requests completed:  2184
+  RPS sent: 214.41
+  Request latency:
+    min: 29.6
+    max: 25908.6
+    median: 83
+    p95: 208.7
+    p99: 305.4
+  Codes:
+    200: 2184
+```
+
+
+```
+Report @ 15:02:07(+0100) 2018-10-25
+  Scenarios launched:  0
+  Scenarios completed: 7
+  Requests completed:  440
+  RPS sent: 70.11
+  Request latency:
+    min: 30.2
+    max: 173
+    median: 74.1
+    p95: 108.2
+    p99: 140.8
+  Codes:
+    200: 440
+```
+
+
+```
+All virtual users finished
+Summary report @ 15:02:07(+0100) 2018-10-25
+  Scenarios launched:  100
+  Scenarios completed: 100
+  Requests completed:  10000
+  RPS sent: 275.86
+  Request latency:
+    min: 28.5
+    max: 25908.6
+    median: 122.3
+    p95: 357.6
+    p99: 629.7
+  Scenario counts:
+    0: 100 (100%)
+  Codes:
+    200: 10000
+```
 
 <!-- .slide: data-background="./images/image1.png" -->
 
