@@ -1,6 +1,8 @@
 HOST=http://localhost:8081/
 LOC=westeurope
 CRVER=nodejs
+DEBUG=''
+BROWS := $(shell command -v firefox --browser 2> /dev/null)
 getcreds:
 	az aks get-credentials -g present-perf-uksouth -n perfpresent-perf-uksouth
 artillery:
@@ -90,3 +92,16 @@ k8-install-tiller:
 	kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 	kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 
+test-site:
+	./node_modules/.bin/artillery quick --count 50 -n 50 http://localhost:3000/echo
+
+test: test-site
+	echo "done"
+bench-site-%:
+	echo "testing for $*"
+	./node_modules/.bin/artillery dino
+	DEBUG='' ./node_modules/.bin/artillery run --quiet -o report/$*.json artillery.yaml > temp/testout.txt
+	cat report/$*.json
+	./node_modules/.bin/artillery report report/$*.json
+	${BROWS} report/$*.json.html
+	
