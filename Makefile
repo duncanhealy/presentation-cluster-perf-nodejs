@@ -1,36 +1,19 @@
 HOST=http://localhost:8081/
 LOC=westeurope
 CRVER=nodejs
+DEBUG=''
+BROWS := $(shell command -v firefox --browser 2> /dev/null)
 getcreds:
 	az aks get-credentials -g present-perf-uksouth -n perfpresent-perf-uksouth
 artillery:
 	./node_modules/.bin/artillery quick --count 10 -n 20 ${HOST}
-createtest:
-	cat << EOF > test.yaml
-		config:
-		target: ${HOST}
-		phases:
-			- duration: 60
-				arrivalRate: 20
-		defaults:
-			headers:
-				BEARER: '987401838271002188298567'
-		scenarios:
-		- flow:
-			- get:
-					url: "/"
-	EOF
 test-art: createtest
 	./node_modules/.bin/artillery test.yaml
-install-asciicinema:
-	cd .. && git clone https://github.com/asciinema/asciinema.git
+
 install-microk8s:
 	snap install microk8s --classic --beta
 	snap alias microk8s.kubectl mk
-install-helm:
 
-asciicinema: # alias bd backdirectory
-	cd ../asciinema && python3 -m asciinema rec -i 2 coredump.cast && bd
 install-node-edge:
 	sudo snap install node --edge --classic
 
@@ -90,3 +73,22 @@ k8-install-tiller:
 	kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 	kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 
+test-site:
+	./node_modules/.bin/artillery quick --count 50 -n 50 http://localhost:3000/echo
+
+test: test-site
+	echo "done"
+bench-site-%:
+	echo "testing for $*"
+	./node_modules/.bin/artillery dino
+	DEBUG='' ./node_modules/.bin/artillery run --quiet -o report/$*.json artillery.yaml > temp/testout.txt
+	cat report/$*.json
+	./node_modules/.bin/artillery report report/$*.json
+	${BROWS} report/$*.json.html
+
+linkerd-top:
+	linkerd -n emojivoto top deployments
+linkerd-tap:
+	linkerd -n emojivoto tap deployments
+linkerd-stat:
+	linkerd -n emojivoto stat deployments
