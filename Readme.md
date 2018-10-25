@@ -2,6 +2,68 @@
 
 https://github.com/duncanhealy/presentation-cluster-perf-nodejs
 
+
+![Cluster](images/cluster_galaxy.png)
+
+
+![Data](images/cluster_datapoints.png)
+
+
+![Pcs](images/cluster_pc.png)
+
+
+
+[![asciicast](https://asciinema.org/a/HKnUr4XL9BCBVbHkqDqDcn8gE.png)](https://asciinema.org/a/HKnUr4XL9BCBVbHkqDqDcn8gE?autoplay=1&speed=3&theme=tango&size=medium)
+
+
+
+
+![luas to the rescue](images/luastotherescue.png)
+
+
+### Rollback
+
+[![asciicast](https://asciinema.org/a/WNXtJjKiydFjij0WG6PpWuT02.png)](https://asciinema.org/a/WNXtJjKiydFjij0WG6PpWuT02?autoplay=1&speed=3&theme=tango&size=medium)
+
+
+[![asciicast](https://asciinema.org/a/e2SSEIMrPmpjtwM8oD7XFjKyQ.png)](https://asciinema.org/a/e2SSEIMrPmpjtwM8oD7XFjKyQ?autoplay=1&speed=3&theme=tango&size=medium)
+
+
+[Report](reports/report.json.html)
+
+
+[limits](reports/report.limit.html)
+
+
+## Scaling
+
+
+### more replica
+
+
+```yaml
+{{- if .Values.autoscaleMin }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+    name: {{ .Chart.Name }}
+    namespace: {{ .Release.Namespace }}
+    annotations:
+      alpha/target.custom-metrics.podautoscaler.kubernetes.io: '{"items":[{"name":"qps", "value": "20"}]}'
+spec:
+    maxReplicas: {{ .Values.autoscaleMax }}
+    minReplicas: {{ .Values.autoscaleMin }}
+    targetCPUUtilizationPercentage: 80
+    scaleTargetRef:
+      apiVersion: apps/v1beta1
+      kind: Deployment
+      name: {{ .Values.service.name }}-{{ .Chart.Version | replace "." "-"  }}
+{{ end }}
+```
+
+
+[post hpa](hpa.json.html)
+
 ---
 
 ## My clustered History
@@ -155,6 +217,88 @@ if (cluster.isMaster) {
 ### Kubernetes replicas
 
 ```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  generation: 1
+  labels:
+    app: loadapi
+  name: loadapi-v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loadapi
+      chart: loadapi-v2
+      draft: loadapi
+      release: canary
+      version: v2
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        buildID: 01CKNEMPBDCYWG73GAVXHFZPY6
+        prometheus.io/port: "3000"
+        prometheus.io/scrape: "true"
+      creationTimestamp: null
+      labels:
+        app: loadapi
+        chart: loadapi-v2
+        draft: loadapi
+        release: canary
+        version: v2
+    spec:
+      containers:
+      - env:
+        - name: REDIS_CONNECTION_STRING
+          value: redis:6380
+        - name: SELECTED_CONFIG
+          value: staging
+        image: docker.io/loadapi:2.0.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          exec:
+            command:
+            - curl
+            - -f
+            - http://localhost:3000/echo
+          failureThreshold: 3
+          periodSeconds: 40
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: loadapi
+        ports:
+        - containerPort: 3000
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            - curl
+            - -f
+            - http://localhost:3000/echo
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /data/all
+          name: data-all
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: data-all
+status: {}
 ```
 
 
@@ -214,6 +358,15 @@ npm i --save pm2
         "DEBUG": "socket.io-parser:1,socket.io:3,engine:1,myns:*:*",
         "TZ": "UTC",
         "PORT": "6001"
+      }
+    },
+    {
+      "name": "db-multi/server",
+      "script": "node_modules/db-multi/server.js",
+      "args": "6003", // process.env.DB_MULTI_PORT,
+      "env": {
+        "NEDB_MULTI_INTERATIONS": "4",
+        "NEDB_MULTI_PORT": "6003"
       }
     },
   ]
@@ -307,43 +460,10 @@ Note: httpstat
 
 ---
 
-## Scaling
-
-
-### more replica
-
-
-### HPA
-```yaml
-apiVersion: v1
-items:
-- apiVersion: autoscaling/v1
-  kind: HorizontalPodAutoscaler
-  metadata:
-    name: x
-    namespace: ns
-  spec:
-    maxReplicas: 8
-    minReplicas: 1
-    scaleTargetRef:
-      apiVersion: apps/v1beta1
-      kind: Deployment
-      name: x-v18
-    targetCPUUtilizationPercentage: 80
-  status:
-    currentCPUUtilizationPercentage: 4
-    currentReplicas: 1
-    desiredReplicas: 1
-kind: List
-metadata:
-  resourceVersion: ""
-  selfLink: ""
-```
 
 ---
 
 ## Test 
-Note: js
 
 ---
 
@@ -355,3 +475,81 @@ Note: js
 ---
 
 ## Demo
+
+
+### Transform
+
+```js
+  return new require('stream').Transform({
+    transform: function transformer(chunk, encoding, callback){
+        // callback(<error>, <result>)
+        callback(false, chunk.map(a => {
+            // operations on Buffer 
+            return a 
+        })
+    }
+  })
+```
+
+
+## Linkerd 
+
+
+[![asciicast](https://asciinema.org/a/BZ9DQZkhXTY8Q2LCCtpucdUVP.png)](https://asciinema.org/a/BZ9DQZkhXTY8Q2LCCtpucdUVP?autoplay=1&speed=3&theme=tango&size=medium)
+
+
+## Tool List
+
+```text
+> curl
+> http
+> git
+> slack
+> node
+> npm
+> n
+> python
+> helm - 	curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | sudo bash
+> kubectl
+> firefox
+> kubectx
+> kubens
+> go
+> bup
+> Postman
+> VirtuaBox
+> mosh
+> ufw
+> docker - curl -fsSL get.docker.com -o get-docker.sh
+> docker-compose - curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-'uname -s’-‘uname -m’ -o /usr/local/bin/docker-compose
+> brigade
+> draft
+> az
+> gcloud
+> aws
+> jq
+> jpterm
+> htop
+> ngrok
+> microk8s - snap install microk8s --classic --beta
+> ng - npm install -g @angular/cli
+> workbox - npm install workbox-cli --global
+```
+
+
+## testing
+
+```text
+
+> k6
+> fortio
+> artillery
+> bubbleprof
+```
+
+![git stats](images/commitstats.png)
+
+
+```
+Remember to switch those devices off :)
+```
