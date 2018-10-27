@@ -12,9 +12,108 @@ https://github.com/duncanhealy/presentation-cluster-perf-nodejs
 ![Pcs](images/cluster_pc.png)
 
 
+- nodeconf.eu 2016
 
-[![asciicast](https://asciinema.org/a/HKnUr4XL9BCBVbHkqDqDcn8gE.png)](https://asciinema.org/a/HKnUr4XL9BCBVbHkqDqDcn8gE?autoplay=1&speed=3&theme=tango&size=medium)
 
+- nodeconf.eu 2016
+- Hey I've seen the code these guys are writing
+
+
+
+- nodeconf.eu 2016
+- Hey I've seen the code these guys are writing
+- I can do this
+
+
+
+- nodeconf.eu 2016
+- Hey I've seen the code these guys are writing
+- I can do this
+- docker swarm: node containers
+
+
+- nodeconf.eu 2016
+- Hey I've seen the code these guys are writing
+- I can do this
+- docker swarm: node containers
+
+
+![zombies](images/zombies.png)
+
+
+- nodeconf.eu 2016
+- Hey I've seen the code these guys are writing
+- I can do this
+- docker swarm: node containers
+- beware of zombies
+- vmss
+
+---
+
+# Node js 
+
+
+## How can we deploy nodejs to the cloud?
+
+
+## Azure
+- webapps
+- vm
+- vmss
+- k8
+
+
+## How can we package nodejs?
+- direct
+- Docker container
+- helm template
+ 
+
+
+## Are there any more tricks we can use?
+- cluster
+- pm2 
+- hpa
+- node autoscaler
+
+---
+
+## Cluster
+
+
+- lego
+
+
+## tooling to test
+
+- artillery
+- bubbleprof
+- stats
+
+
+## service mesh to the rescue
+
+
+- linkerd
+ + install
+ + inject
+ + stat
+ + dashboard
+ + tap 
+ + top
+
+
+- draft
+ + init
+ + config
+ + create
+ + up
+
+
+- brigade
+
+
+[![asciicast](https://asciinema.org/a/HKnUr4XL9BCBVbHkqDqDcn8gE.png)](https://asciinema.org/a/HKnUr4XL9BCBVbHkqDqDcn8gE?autoplay=1&speed=2&theme=tango&size=medium)
 
 
 
@@ -23,10 +122,11 @@ https://github.com/duncanhealy/presentation-cluster-perf-nodejs
 
 ### Rollback
 
-[![asciicast](https://asciinema.org/a/WNXtJjKiydFjij0WG6PpWuT02.png)](https://asciinema.org/a/WNXtJjKiydFjij0WG6PpWuT02?autoplay=1&speed=3&theme=tango&size=medium)
+
+[![asciicast](https://asciinema.org/a/WNXtJjKiydFjij0WG6PpWuT02.png)](https://asciinema.org/a/WNXtJjKiydFjij0WG6PpWuT02?autoplay=1&speed=2&theme=tango&size=medium)
 
 
-[![asciicast](https://asciinema.org/a/e2SSEIMrPmpjtwM8oD7XFjKyQ.png)](https://asciinema.org/a/e2SSEIMrPmpjtwM8oD7XFjKyQ?autoplay=1&speed=3&theme=tango&size=medium)
+[![asciicast](https://asciinema.org/a/e2SSEIMrPmpjtwM8oD7XFjKyQ.png)](https://asciinema.org/a/e2SSEIMrPmpjtwM8oD7XFjKyQ?autoplay=1&speed=2&theme=tango&size=medium)
 
 
 [Report](reports/report.json.html)
@@ -39,6 +139,7 @@ https://github.com/duncanhealy/presentation-cluster-perf-nodejs
 
 
 [hpa4](reports/hpa4.json.html)
+
 
 ## Scaling
 
@@ -96,6 +197,8 @@ spec:
 
 * Games - Civ, Elite, Warcraft ..
 
+![civ](images/civ.png)
+
 
 ### Solaris
 
@@ -136,7 +239,9 @@ esac
 
 ### Docker
 
+
 * Bash and shell scripts still have relevance for constructing container images
+
 
 ```docker
 # ### STAGE 1: Build ###
@@ -164,6 +269,13 @@ CMD ["nginx", "-g", "daemon off;"]
 
 
 ### Kubernetes
+
+
+![luas to the rescue](images/luastotherescue.png)
+
+
+- alpine vs slimline
+
 
 ---
 
@@ -297,7 +409,13 @@ status: {}
 ### docker swarm
 
 
+![luas to the rescue](images/luastotherescue.png)
+
+
+
 ### pm2
+
+
 ```bash
 npm i --save pm2
 ./node_modules/.bin/pm2-docker start pm2start.json
@@ -330,6 +448,10 @@ npm i --save pm2
         "PORT": "8000"
       }
     },
+```
+
+
+```json
     {
       "name": "fetch",
       "exec_mode": "fork",
@@ -352,6 +474,10 @@ npm i --save pm2
         "PORT": "6001"
       }
     },
+```
+
+
+```json
     {
       "name": "db-multi/server",
       "script": "node_modules/db-multi/server.js",
@@ -893,9 +1019,20 @@ Summary report @ 15:02:07(+0100) 2018-10-25
 > bubbleprof
 ```
 
+
+## Prometheus
+
+
+- /metrics
+- /ready
+![prom](images/prom.png)
+
+
 ![git stats](images/commitstats.png)
 
 
 ```
 Remember to switch those devices off :)
 ```
+
+![sleep](images/sleep.png)
